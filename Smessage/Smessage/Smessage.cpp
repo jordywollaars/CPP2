@@ -5,36 +5,63 @@
 #include <fstream>
 #include <ios>
 #include <vector>
+#include <bitset>
 
-#define WAVFILE "D:/Users/Jordy/Desktop/CPP2/Smessage/de-oude-schicht.wav"
-#define AIFFFile "D:/Users/Jordy/Desktop/CPP2/Smessage/infinitely-many-numbers.aiff"
-#define CAFFILE "D:/Users/Jordy/Desktop/CPP2/Smessage/news.caf"
+#define WAVFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav"
+#define AIFFFile "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aiff"
+#define CAFFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf"
 
 int main()
 {
 	std::ifstream input(WAVFILE, std::ios::binary);
 
 	// copies all data into buffer
-	std::vector<uint16_t> buffer(std::istreambuf_iterator<char>(input), {});
+	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
 
-	int i = 0;
-	while (i < buffer.size())
+	std::vector<std::bitset<8>> possibleMessage;
+
+	std::vector<std::bitset<8>> bits;
+
+	for (int i = 44; i < buffer.size(); i+=2)
 	{
-		std::cout << std::hex << buffer[i] << " ";
+		char shifted = buffer[i] << 7;
+		std::bitset<8> x(shifted);
+		//std::cout << (x >> 7) << std::endl;
 
-		i++;
+		/*bool bit = shifted >> 7;
+
+		std::cout << bit << std::endl;*/
+
+
+		bits.push_back(x);
+
+		if (bits.size() == 8)
+		{
+			for (int i = 0; i < 7; i++)
+			{
+				std::bitset<8> x(bits[i]);
+				std::bitset<8> test = x >> i;
+
+				//std::cout << test << std::endl;
+				bits[i] = test;
+			}
+
+			possibleMessage.push_back(
+				bits[0] | bits[1] | bits[2] | bits[3] | bits[4] | bits[5] | bits[6] | bits[7]
+			);
+
+			std::bitset<8> x(possibleMessage[possibleMessage.size()-1]);
+
+			std::cout << x << std::endl;
+
+			if (x == 0)
+			{
+				break;
+			}
+
+			bits.clear();
+		}
 	}
-
+	
 	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
