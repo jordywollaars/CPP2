@@ -7,18 +7,17 @@
 #include <vector>
 #include <bitset>
 
-#include "WaveReader.hpp"
-
-#include "Wave.hpp"
+#include "WaveHandler.hpp"
 
 #define SECTIONDIVIDER "-------------------------------------------"
 
-#define WAVFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav"
+#define WAVFILEWITHMESSAGE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav"
+#define WAVFILEWITHOUTMESSAGE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/sfx_weapon_singleshot2.wav"
 #define AIFFFile "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aiff"
 #define CAFFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf"
 
 void read();
-void write();
+void write(std::string filepath = "");
 
 int main()
 {
@@ -71,20 +70,70 @@ void read()
 	std::cout << SECTIONDIVIDER << std::endl;
 
 	//Look for message in file
-	std::unique_ptr<WaveReader> fileReader = std::make_unique<WaveReader>();
+	std::unique_ptr<WaveHandler> fileReader = std::make_unique<WaveHandler>();
 	std::vector<std::bitset<8>> possibleMessage = fileReader.get()->readFile(filepath);
 
-	//Convert bitset<8> to text
-	for (int i = 0; i < possibleMessage.size(); i++)
-	{
-		unsigned long x = possibleMessage[i].to_ulong();
-		unsigned char y = static_cast<unsigned char>(x);
+	bool invalidMessage = false;
+	std::string message = "";
 
-		std::cout << y;
+	//Validate message
+	{
+		for (int i = 0; i < possibleMessage.size(); i++)
+		{
+			unsigned long x = possibleMessage[i].to_ulong();
+			char c;
+			if (x <= CHAR_MAX) {
+				c = static_cast<char>(x);
+				message += c;
+			}
+			else {
+				invalidMessage = true;
+			}
+		}
+	}
+
+	if (!invalidMessage)
+	{
+		std::cout << message << std::endl;
+	}
+	else
+	{
+		std::cout << "No message was found! Did you mean to hide a message? (y/n)" << std::endl;
+
+		std::string input;
+
+		while (input != "y" && input != "n")
+		{
+			std::cin >> input;
+			std::cin.get();
+		}
+
+		if (input == "y")
+		{
+			write(filepath);
+		}
 	}
 }
 
-void write()
+void write(std::string filepath)
 {
-	std::cout << "This part has not been developed yet!" << std::endl;
+	std::string messageToHide;
+
+	std::cout << "Insert message to hide: ";
+	std::getline(std::cin, messageToHide);
+
+	std::unique_ptr<WaveHandler> fileHandler = std::make_unique<WaveHandler>();
+	fileHandler.get()->setMessageToHide(messageToHide);
+
+	while (filepath.size() <= 0)
+	{
+		std::cout << "Insert path to a wav file: ";
+		std::cin >> filepath;
+		std::cin.get();
+	}
+
+	std::cout << SECTIONDIVIDER << std::endl;
+
+	fileHandler.get()->writeMessageInFile(filepath);
+
 }

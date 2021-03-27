@@ -18,7 +18,7 @@
     <ClCompile Include="Smessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WaveReader.cpp">
+    <ClCompile Include="WaveHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -26,7 +26,7 @@
     <ClInclude Include="Wave.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WaveReader.hpp">
+    <ClInclude Include="WaveHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
