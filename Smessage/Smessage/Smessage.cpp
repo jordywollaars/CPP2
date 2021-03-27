@@ -7,61 +7,84 @@
 #include <vector>
 #include <bitset>
 
+#include "WaveReader.hpp"
+
+#include "Wave.hpp"
+
+#define SECTIONDIVIDER "-------------------------------------------"
+
 #define WAVFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav"
 #define AIFFFile "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aiff"
 #define CAFFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf"
 
+void read();
+void write();
+
 int main()
 {
-	std::ifstream input(WAVFILE, std::ios::binary);
+	int option = 0;
 
-	// copies all data into buffer
-	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
+	std::cout << "Welcome to Smessage!" << std::endl;
+	std::cout << SECTIONDIVIDER << std::endl;
 
-	std::vector<std::bitset<8>> possibleMessage;
+	std::cout << "What do you wanna do?" << std::endl
+		<< "1. Read secret message" << std::endl
+		<< "2. Write secret message" << std::endl;
 
-	std::vector<std::bitset<8>> bits;
+	bool tried = false;
 
-	for (int i = 44; i < buffer.size(); i+=2)
+	while (option != 1 && option != 2)
 	{
-		char shifted = buffer[i] << 7;
-		std::bitset<8> x(shifted);
-		//std::cout << (x >> 7) << std::endl;
-
-		/*bool bit = shifted >> 7;
-
-		std::cout << bit << std::endl;*/
-
-
-		bits.push_back(x);
-
-		if (bits.size() == 8)
+		if (tried)
 		{
-			for (int i = 0; i < 8; i++)
-			{
-				std::bitset<8> x(bits[i]);
-				std::bitset<8> test = x >> i;
-
-				//std::cout << test << std::endl;
-				bits[i] = test;
-			}
-
-			possibleMessage.push_back(
-				bits[0] | bits[1] | bits[2] | bits[3] | bits[4] | bits[5] | bits[6] | bits[7]
-			);
-
-			std::bitset<8> x(possibleMessage[possibleMessage.size()-1]);
-
-			std::cout << x << std::endl;
-
-			if (x == 0)
-			{
-				break;
-			}
-
-			bits.clear();
+			std::cout << "Invalid option! Please enter \"1\" or \"2\"." << std::endl;
 		}
+
+		std::cin >> option;
+		std::cin.get();
+
+		tried = true;
+
+		std::cout << SECTIONDIVIDER << std::endl;
 	}
-	
+
+	if (option == 1)
+	{
+		read();
+	}
+	else if (option == 2)
+	{
+		write();
+	}
+
 	return 0;
+}
+
+void read()
+{
+	std::string filepath;
+
+	std::cout << "Insert path to a wav file: ";
+	std::cin >> filepath;
+	std::cin.get();
+
+	std::cout << SECTIONDIVIDER << std::endl;
+
+	//Look for message in file
+	std::unique_ptr<WaveReader> fileReader = std::make_unique<WaveReader>();
+	std::vector<std::bitset<8>> possibleMessage = fileReader.get()->readFile(filepath);
+
+	//Convert bitset<8> to text
+	for (int i = 0; i < possibleMessage.size(); i++)
+	{
+		unsigned long x = possibleMessage[i].to_ulong();
+		unsigned char y = static_cast<unsigned char>(x);
+
+		std::cout << y;
+	}
+}
+
+void write()
+{
+	std::cout << "This part has not been developed yet!" << std::endl;
 }

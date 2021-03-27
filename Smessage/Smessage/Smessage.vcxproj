@@ -140,9 +140,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Smessage.cpp" />
+    <ClCompile Include="WaveReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Wave.hpp" />
+    <ClInclude Include="WaveReader.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
