@@ -7,6 +7,8 @@
 #include <vector>
 #include <bitset>
 
+#include <crtdbg.h>
+
 #include "WaveHandler.hpp"
 
 #define SECTIONDIVIDER "-------------------------------------------"
@@ -85,6 +87,8 @@ int main()
 			}
 		}
 	}
+
+	_CrtDumpMemoryLeaks();
 
 	return 0;
 }
