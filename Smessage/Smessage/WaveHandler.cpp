@@ -8,11 +8,19 @@
 
 const std::vector<std::bitset<8>> WaveHandler::readFile(const std::string filepath)
 {
-	int startPosition = determineHeaderSize(filepath);
-
 	std::ifstream input(filepath, std::ios::binary);
+
 	// copies all data into buffer
 	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
+
+	Wave waveHeader;
+
+	input.read((char*)&waveHeader, sizeof(waveHeader));
+	int headerSize = sizeof(waveHeader);
+
+	int startPosition = headerSize;
+
+	input.close();
 
 	std::vector<std::bitset<8>> possibleMessage;
 
@@ -55,30 +63,6 @@ const std::vector<std::bitset<8>> WaveHandler::readFile(const std::string filepa
 	return possibleMessage;
 }
 
-int WaveHandler::determineHeaderSize(const std::string filepath)
-{
-	Wave waveHeader;
-	//TODO: get rid of raw pointer
-	FILE* waveFile;
-	int headerSize = sizeof(waveHeader);
-
-	//std::cout << filepath;
-
-	fopen_s(&waveFile, filepath.c_str(), "r");
-
-	if (waveFile == NULL)
-	{
-		std::cout << "Invalid!" << std::endl;
-		return -1;
-	}
-
-	fread(&waveHeader, headerSize, 1, waveFile);
-
-	fclose(waveFile);
-
-	return headerSize;
-}
-
 const void WaveHandler::setMessageToHide(std::string message)
 {
 	this->messageToHide = message;
@@ -100,11 +84,18 @@ const void WaveHandler::setMessageToHide(std::string message)
 
 void WaveHandler::writeMessageInFile(const std::string filepath)
 {
-	int startPosition = determineHeaderSize(filepath);
-
 	std::ifstream input(filepath, std::ios::binary);
 	// copies all data into buffer
 	std::vector<uint8_t> buffer(std::istreambuf_iterator<char>(input), {});
+
+	Wave waveHeader;
+
+	input.read((char*)&waveHeader, sizeof(waveHeader));
+	int headerSize = sizeof(waveHeader);
+
+	int startPosition = headerSize;
+
+	input.close();
 
 	uint8_t mask1{ 1 };
 	uint8_t mask2{ 0xFE };
