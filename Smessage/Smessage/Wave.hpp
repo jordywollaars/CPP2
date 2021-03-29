@@ -1,6 +1,6 @@
 #pragma once
 
-class Wave
+struct Wave
 {
 public:
     char                RIFF[4];        // RIFF Header      Magic header

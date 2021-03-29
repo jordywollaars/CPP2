@@ -29,5 +29,8 @@
     <ClInclude Include="WaveHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OperatingInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

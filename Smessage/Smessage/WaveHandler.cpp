@@ -3,32 +3,22 @@
 #include <iostream>
 #include <fstream>
 #include <ios>
+#include <regex>
+
 
 #include "Wave.hpp"
 
-const std::vector<std::bitset<8>> WaveHandler::readFile(const std::string filepath)
+std::vector<std::bitset<8>> WaveHandler::readFile() const
 {
-	std::ifstream input(filepath, std::ios::binary);
-
-	// copies all data into buffer
-	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
-
-	Wave waveHeader;
-
-	input.read((char*)&waveHeader, sizeof(waveHeader));
-	int headerSize = sizeof(waveHeader);
-
-	int startPosition = headerSize;
-
-	input.close();
+	OperatingInfo operatingInfo = this->setupOperatingInfo();
 
 	std::vector<std::bitset<8>> possibleMessage;
 
 	std::vector<std::bitset<8>> bits;
 
-	for (int i = startPosition; i < buffer.size(); i += 2)
+	for (int i = operatingInfo.dataStartPosition; i < operatingInfo.buffer.size(); i += 2)
 	{
-		char shifted = buffer[i] << 7;
+		char shifted = operatingInfo.buffer[i] << 7;
 		std::bitset<8> x(shifted);
 
 		bits.push_back(x);
@@ -63,13 +53,13 @@ const std::vector<std::bitset<8>> WaveHandler::readFile(const std::string filepa
 	return possibleMessage;
 }
 
-const void WaveHandler::setMessageToHide(std::string message)
+void WaveHandler::setMessageToHide(const std::string& message)
 {
-	this->messageToHide = message;
+	this->messageBits.clear();
 
-	for (int i = 0; i < this->messageToHide.size(); i++)
+	for (int i = 0; i < message.size(); i++)
 	{
-		std::bitset<8> byte(messageToHide[i]);
+		std::bitset<8> byte(message[i]);
 
 		this->messageBits.push_back(byte[7]);
 		this->messageBits.push_back(byte[6]);
@@ -82,45 +72,51 @@ const void WaveHandler::setMessageToHide(std::string message)
 	}
 }
 
-void WaveHandler::writeMessageInFile(const std::string filepath)
+void WaveHandler::setOperatingPath(const std::string& filepath)
 {
-	std::ifstream input(filepath, std::ios::binary);
-	// copies all data into buffer
-	std::vector<uint8_t> buffer(std::istreambuf_iterator<char>(input), {});
+	std::regex expression("^.*\.(wav|WAV)$"); //|caf|CAF|aiff|AIFF
 
-	Wave waveHeader;
+	if (!std::regex_match(filepath, expression))
+	{
+		throw std::invalid_argument("Invalid file extension.");
+	}
 
-	input.read((char*)&waveHeader, sizeof(waveHeader));
-	int headerSize = sizeof(waveHeader);
+	operatingPath = filepath;
+}
 
-	int startPosition = headerSize;
+std::string WaveHandler::getOperatingPath() const
+{
+	return this->operatingPath;
+}
 
-	input.close();
+void WaveHandler::writeMessageInFile() const
+{
+	OperatingInfo operatingInfo = this->setupOperatingInfo();
 
 	uint8_t mask1{ 1 };
 	uint8_t mask2{ 0xFE };
 
 	int counter = 0;
-	for (int i = startPosition; i < buffer.size(); i += 2)
+	for (int i = operatingInfo.dataStartPosition; i < operatingInfo.buffer.size(); i += 2)
 	{
 		if (counter < this->messageBits.size())
 		{
-			if (buffer[i] & mask1)
+			if (operatingInfo.buffer[i] & mask1)
 			{
 				if (messageBits[counter] != 1)
 				{
-					buffer[i] = buffer[i] & mask2;
+					operatingInfo.buffer[i] = operatingInfo.buffer[i] & mask2;
 				}
 			}
 			else
 			{
 				if (messageBits[counter] != 0)
 				{
-					buffer[i] = buffer[i] | mask1;
+					operatingInfo.buffer[i] = operatingInfo.buffer[i] | mask1;
 				}
 			}
 
-			std::bitset<8> x(buffer[i]);
+			std::bitset<8> x(operatingInfo.buffer[i]);
 			//std::cout << x << " - " << messageBits[counter] << std::endl;
 
 			counter++;
@@ -131,12 +127,12 @@ void WaveHandler::writeMessageInFile(const std::string filepath)
 			{
 				int bufferPos = j * 2;
 
-				if (buffer[i + bufferPos] & mask1)
+				if (operatingInfo.buffer[i + bufferPos] & mask1)
 				{
-					buffer[i + bufferPos] = buffer[i + bufferPos] & mask2;
+					operatingInfo.buffer[i + bufferPos] = operatingInfo.buffer[i + bufferPos] & mask2;
 				}
 
-				std::bitset<8> x(buffer[i+bufferPos]);
+				std::bitset<8> x(operatingInfo.buffer[i+bufferPos]);
 				//std::cout << x << " - 0" << std::endl;
 			}
 
@@ -146,17 +142,41 @@ void WaveHandler::writeMessageInFile(const std::string filepath)
 
 	if (counter < this->messageBits.size())
 	{
-		std::cout << "Couldn't fit entire message inside the file.";
+		std::cout << "Couldn't fit entire message inside the file." << std::endl;
+		return;
 	}
 
 	std::ofstream ofs;
-	ofs.open(filepath, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+	ofs.open(this->operatingPath, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 
-	for (uint8_t byte : buffer)
+	for (uint8_t byte : operatingInfo.buffer)
 	{
 		char c = byte;
 		ofs << c;
 	}
 
 	ofs.close();
+}
+
+OperatingInfo WaveHandler::setupOperatingInfo() const
+{
+	std::ifstream input(this->operatingPath, std::ios::binary);
+
+	if (!input)
+	{
+		throw std::runtime_error("Could not open file");
+	}
+
+	// copies all data into buffer
+	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
+
+	Wave waveHeader;
+
+	input.read((char*)&waveHeader, sizeof(waveHeader));
+	int headerSize = sizeof(waveHeader);
+
+
+	OperatingInfo oi{ buffer, headerSize };
+
+	return oi;
 }
