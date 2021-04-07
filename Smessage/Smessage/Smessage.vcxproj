@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Smessage.cpp" />
     <ClCompile Include="WaveHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FileHandler.hpp" />
     <ClInclude Include="OperatingInfo.hpp" />
     <ClInclude Include="Wave.hpp" />
     <ClInclude Include="WaveHandler.hpp" />

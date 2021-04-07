@@ -18,8 +18,8 @@
 #define AIFFFile "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aiff"
 #define CAFFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf"
 
-void read(std::unique_ptr<WaveHandler>& fileHandler);
-void write(std::unique_ptr<WaveHandler>& fileHandler);
+void read(std::unique_ptr<FileHandler>& fileHandler);
+void write(std::unique_ptr<FileHandler>& fileHandler);
 
 int main()
 {
@@ -57,7 +57,7 @@ int main()
 
 		if (option == '1' || option == '2')
 		{
-			std::unique_ptr<WaveHandler> fileReader = std::make_unique<WaveHandler>();
+			std::unique_ptr<FileHandler> fileReader = std::make_unique<WaveHandler>();
 
 			if (option == '1')
 			{
@@ -93,7 +93,7 @@ int main()
 	return 0;
 }
 
-void read(std::unique_ptr<WaveHandler>& fileHandler)
+void read(std::unique_ptr<FileHandler>& fileHandler)
 {
 	std::string filepath;
 
@@ -148,7 +148,7 @@ void read(std::unique_ptr<WaveHandler>& fileHandler)
 	}
 }
 
-void write(std::unique_ptr<WaveHandler>& fileHandler)
+void write(std::unique_ptr<FileHandler>& fileHandler)
 {
 	std::string messageToHide;
 

@@ -1,25 +1,17 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <bitset>
+#include "FileHandler.hpp";
 
-#include "OperatingInfo.hpp";
-
-class WaveHandler
+class WaveHandler : public FileHandler
 {
-private:
-	std::string messageToHide;
-	std::string operatingPath;
-	std::vector<bool> messageBits;
 public:
-	std::vector<std::bitset<8>> readFile() const;
-	void writeMessageInFile() const;
+	std::vector<std::bitset<8>> readFile() const override;
+	void writeMessageInFile() const override;
 
-	OperatingInfo setupOperatingInfo() const;
+	OperatingInfo setupOperatingInfo() const override;
 	
-	std::string getOperatingPath() const;
+	std::string getOperatingPath() const override;
 
-	void setMessageToHide(const std::string& message);
-	void setOperatingPath(const std::string& filepath);
+	void setMessageToHide(const std::string& message) override;
+	void setOperatingPath(const std::string& filepath) override;
 };
