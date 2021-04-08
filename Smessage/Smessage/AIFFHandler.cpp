@@ -78,17 +78,11 @@ void AIFFHandler::writeMessageInFile() const
 	{
 		throw std::runtime_error("Data could not be found in the file");
 	}
-	auto temp = std::prev(it, 17);
 
-	unsigned char byte1 = *temp;
-	++temp;
-	unsigned char byte2 = *temp;
-	int sampleSize = (byte2 << 8) + byte1;
+	std::advance(it, 17);
 
-	std::advance(it, 8);
-
-	int steps = sampleSize / 8;
-	for (it; it != buffer.end(); std::advance(it, steps))
+	//int steps = sampleSize / 8;
+	for (it; it != buffer.end(); std::advance(it, 2))
 	{
 		if (counter < this->messageBits.size())
 		{
