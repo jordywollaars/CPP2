@@ -20,15 +20,9 @@ std::vector<std::bitset<8>> WaveHandler::readFile() const
 		throw std::runtime_error("Data could not be found in the file");
 	}
 
-	auto temp = std::prev(it, 2);
-	unsigned char byte1 = *temp;
-	++temp;
-	unsigned char byte2 = *temp;
-	int sampleSize = (byte2 << 8) + byte1;
-
 	std::advance(it, 8);
 
-	int steps = sampleSize / 8;
+	int steps = getSampleSizeFromBuffer(buffer) / 8;
 	for (it; it != buffer.end(); std::advance(it, steps))
 	{
 		char shifted = *it << 7;
@@ -82,16 +76,10 @@ void WaveHandler::writeMessageInFile() const
 	{
 		throw std::runtime_error("Data could not be found in the file");
 	}
-	auto temp = std::prev(it, 2);
-
-	unsigned char byte1 = *temp;
-	++temp;
-	unsigned char byte2 = *temp;
-	int sampleSize = (byte2 << 8) + byte1;
 
 	std::advance(it, 8);
 
-	int steps = sampleSize / 8;
+	int steps = getSampleSizeFromBuffer(buffer) / 8;
 	for (it; it != buffer.end(); std::advance(it, steps))
 	{
 		if (counter < this->messageBits.size())
@@ -150,4 +138,21 @@ void WaveHandler::writeMessageInFile() const
 	}
 
 	ofs.close();
+}
+
+int WaveHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
+{
+	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->pattern), std::end(this->pattern));
+	if (it == std::end(buffer))
+	{
+		throw std::runtime_error("Data could not be found in the file");
+	}
+	auto temp = std::prev(it, 2);
+
+	unsigned char byte1 = *temp;
+	++temp;
+	unsigned char byte2 = *temp;
+	int sampleSize = (byte2 << 8) + byte1;
+
+	return sampleSize;
 }

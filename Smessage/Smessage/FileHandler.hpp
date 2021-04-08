@@ -15,6 +15,9 @@ protected:
 public:
 	virtual std::vector<std::bitset<8>> readFile() const = 0;
 	virtual void writeMessageInFile() const = 0;
+
+	virtual int getSampleSizeFromBuffer(const std::vector<char>& buffer) const = 0;
+
 	virtual std::string getOperatingPath() const;
 
 	virtual void setMessageToHide(const std::string& message);

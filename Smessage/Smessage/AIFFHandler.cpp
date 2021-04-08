@@ -13,21 +13,7 @@ std::vector<std::bitset<8>> AIFFHandler::readFile() const
 
 	std::vector<std::bitset<8>> bits;
 
-	const std::vector<int> commPattern{ 0x43, 0x4f, 0x4d, 0x4d };
-	auto temp = std::search(std::begin(buffer), std::end(buffer), std::begin(commPattern), std::end(commPattern));
-	if (temp == std::end(buffer))
-	{
-		throw std::runtime_error("COMM could not be found in the file");
-	}
-
-	std::advance(temp, 14);
-	unsigned char byte1 = *temp;
-	++temp;
-	unsigned char byte2 = *temp;
-	int sampleSize = (byte1 << 8) + byte2;
-
-	const std::vector<int> pattern{ 0x53, 0x53, 0x4e, 0x44 };
-	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(pattern), std::end(pattern));
+	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->ssndPattern), std::end(this->ssndPattern));
 	if (it == std::end(buffer))
 	{
 		throw std::runtime_error("SSND could not be found in the file");
@@ -35,7 +21,8 @@ std::vector<std::bitset<8>> AIFFHandler::readFile() const
 
 	std::advance(it, 17);
 
-	for (it; it != buffer.end(); std::advance(it, sampleSize/8))
+	int steps = getSampleSizeFromBuffer(buffer) / 8;
+	for (it; it != buffer.end(); std::advance(it, steps))
 	{
 		//std::cout << "O: " << std::bitset<8>(*it) << std::endl;
 		//char shifted = *it >> 7;
@@ -85,21 +72,7 @@ void AIFFHandler::writeMessageInFile() const
 	int counter = 0;
 	int nullByteCounter = 8;
 
-	const std::vector<int> commPattern{ 0x43, 0x4f, 0x4d, 0x4d };
-	auto temp = std::search(std::begin(buffer), std::end(buffer), std::begin(commPattern), std::end(commPattern));
-	if (temp == std::end(buffer))
-	{
-		throw std::runtime_error("COMM could not be found in the file");
-	}
-
-	std::advance(temp, 14);
-	unsigned char byte1 = *temp;
-	++temp;
-	unsigned char byte2 = *temp;
-	int sampleSize = (byte1 << 8) + byte2;
-
-	std::vector<int> pattern{ 0x53, 0x53, 0x4e, 0x44 };
-	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(pattern), std::end(pattern));
+	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->ssndPattern), std::end(this->ssndPattern));
 	if (it == std::end(buffer))
 	{
 		throw std::runtime_error("Data could not be found in the file");
@@ -107,8 +80,8 @@ void AIFFHandler::writeMessageInFile() const
 
 	std::advance(it, 17);
 
-	//int steps = sampleSize / 8;
-	for (it; it != buffer.end(); std::advance(it, sampleSize/8))
+	int steps = getSampleSizeFromBuffer(buffer) / 8;
+	for (it; it != buffer.end(); std::advance(it, steps))
 	{
 		if (counter < this->messageBits.size())
 		{
@@ -166,4 +139,21 @@ void AIFFHandler::writeMessageInFile() const
 	}
 
 	ofs.close();
+}
+
+int AIFFHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
+{
+	auto temp = std::search(std::begin(buffer), std::end(buffer), std::begin(this->commPattern), std::end(this->commPattern));
+	if (temp == std::end(buffer))
+	{
+		throw std::runtime_error("COMM could not be found in the file");
+	}
+
+	std::advance(temp, 14);
+	unsigned char byte1 = *temp;
+	++temp;
+	unsigned char byte2 = *temp;
+	int sampleSize = (byte1 << 8) + byte2;
+
+	return sampleSize;
 }

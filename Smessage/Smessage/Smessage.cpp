@@ -63,7 +63,6 @@ int main()
 		if (option == '1' || option == '2')
 		{
 			std::unique_ptr<FileHandler> fileReader = std::make_unique<AIFFHandler>();
-			fileReader.get()->setOperatingPath("D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aif");
 
 			if (option == '1')
 			{
@@ -101,13 +100,13 @@ int main()
 
 void read(std::unique_ptr<FileHandler>& fileHandler)
 {
-	/*std::string filepath;
+	std::string filepath;
 
 	std::cout << "Insert path to a wav file: ";
 	std::cin >> filepath;
 	std::cin.get();
 
-	fileHandler.get()->setOperatingPath(filepath);*/
+	fileHandler.get()->setOperatingPath(filepath);
 
 	std::cout << SECTIONDIVIDER << std::endl;
 
