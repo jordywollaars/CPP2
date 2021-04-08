@@ -16,7 +16,7 @@ std::vector<std::bitset<8>> AIFFHandler::readFile() const
 	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->ssndPattern), std::end(this->ssndPattern));
 	if (it == std::end(buffer))
 	{
-		throw std::runtime_error("SSND could not be found in the file");
+		throw std::runtime_error("\"SSND\" could not be found in the file");
 	}
 
 	std::advance(it, 17);
@@ -75,7 +75,7 @@ void AIFFHandler::writeMessageInFile() const
 	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->ssndPattern), std::end(this->ssndPattern));
 	if (it == std::end(buffer))
 	{
-		throw std::runtime_error("Data could not be found in the file");
+		throw std::runtime_error("\"SSND\" could not be found in the file");
 	}
 
 	std::advance(it, 17);
@@ -125,8 +125,7 @@ void AIFFHandler::writeMessageInFile() const
 
 	if (counter < this->messageBits.size())
 	{
-		std::cout << "Couldn't fit entire message inside the file." << std::endl;
-		return;
+		throw std::runtime_error("Couldn't fit entire message inside the file.");
 	}
 
 	std::ofstream ofs;
@@ -146,14 +145,25 @@ int AIFFHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
 	auto temp = std::search(std::begin(buffer), std::end(buffer), std::begin(this->commPattern), std::end(this->commPattern));
 	if (temp == std::end(buffer))
 	{
-		throw std::runtime_error("COMM could not be found in the file");
+		throw std::runtime_error("\"COMM\" could not be found in the file");
 	}
 
 	std::advance(temp, 14);
+
 	unsigned char byte1 = *temp;
 	++temp;
 	unsigned char byte2 = *temp;
 	int sampleSize = (byte1 << 8) + byte2;
 
 	return sampleSize;
+}
+
+const std::string AIFFHandler::getExpressionString() const
+{
+	return "^.*\.(aiff|AIFF|aif|AIF)$";
+}
+
+const std::string AIFFHandler::getExtensionString() const
+{
+	return "aiff";
 }

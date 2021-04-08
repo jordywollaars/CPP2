@@ -18,6 +18,9 @@ public:
 
 	virtual int getSampleSizeFromBuffer(const std::vector<char>& buffer) const = 0;
 
+	virtual const std::string getExpressionString() const = 0;
+	virtual const std::string getExtensionString() const = 0;
+
 	virtual std::string getOperatingPath() const;
 
 	virtual void setMessageToHide(const std::string& message);

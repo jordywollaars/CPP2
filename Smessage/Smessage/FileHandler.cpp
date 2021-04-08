@@ -40,7 +40,7 @@ void FileHandler::setMessageToHide(const std::string& message)
 
 void FileHandler::setOperatingPath(const std::string& filepath)
 {
-	std::regex expression("^.*\.(wav|WAV|aiff|AIFF|aif|AIF)$"); //|caf|CAF
+	std::regex expression(this->getExpressionString());
 
 	if (!std::regex_match(filepath, expression))
 	{

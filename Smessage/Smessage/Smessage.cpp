@@ -11,6 +11,7 @@
 
 #include "WaveHandler.hpp"
 #include "AIFFHandler.hpp"
+#include "CAFHandler.hpp"
 
 #define SECTIONDIVIDER "-------------------------------------------"
 
@@ -22,7 +23,7 @@
 //D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/test.aif
 //D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf
 
-
+std::unique_ptr<FileHandler> getSpecificFileHandler(char extension);
 void read(std::unique_ptr<FileHandler>& fileHandler);
 void write(std::unique_ptr<FileHandler>& fileHandler);
 
@@ -49,7 +50,7 @@ int main()
 			if (tried)
 			{
 				std::cout << "Invalid option! Please enter \"1\", \"2\" or \"3\"." << std::endl;
-				option = 0;
+				option = '0';
 			}
 
 			std::cin >> option;
@@ -62,7 +63,32 @@ int main()
 
 		if (option == '1' || option == '2')
 		{
-			std::unique_ptr<FileHandler> fileReader = std::make_unique<AIFFHandler>();
+			tried = false;
+			char extension = '0';
+			std::unique_ptr<FileHandler> fileReader;
+
+			std::cout << "What type of file are you using?" << std::endl
+				<< "1. WAV" << std::endl
+				<< "2. AIFF" << std::endl
+				<< "3. CAF" << std::endl;
+
+			while (extension != '1' && extension != '2' && extension != '3')
+			{
+				if (tried)
+				{
+					std::cout << "Invalid option! Please enter \"1\", \"2\" or \"3\"." << std::endl;
+					extension = '0';
+				}
+
+				std::cin >> extension;
+				std::cin.get();
+
+				tried = true;
+
+				std::cout << SECTIONDIVIDER << std::endl;
+			}
+
+			fileReader = getSpecificFileHandler(extension);
 
 			if (option == '1')
 			{
@@ -102,7 +128,7 @@ void read(std::unique_ptr<FileHandler>& fileHandler)
 {
 	std::string filepath;
 
-	std::cout << "Insert path to a wav file: ";
+	std::cout << "Insert path to a " << fileHandler.get()->getExtensionString() << " file: ";
 	std::cin >> filepath;
 	std::cin.get();
 
@@ -168,7 +194,7 @@ void write(std::unique_ptr<FileHandler>& fileHandler)
 	{
 		std::string filepath;
 
-		std::cout << "Insert path to a wav file: ";
+		std::cout << "Insert path to a " << fileHandler.get()->getExtensionString() << " file: ";
 		std::cin >> filepath;
 		std::cin.get();
 
@@ -186,5 +212,19 @@ void write(std::unique_ptr<FileHandler>& fileHandler)
 		std::cerr << "Something went wrong: " << e.what() << std::endl;
 		return;
 	}
+}
 
+std::unique_ptr<FileHandler> getSpecificFileHandler(char extension)
+{
+	switch (extension)
+	{
+	case '1':
+		return std::make_unique<WaveHandler>();
+	case '2':
+		return std::make_unique<AIFFHandler>();
+	case '3':
+		return std::make_unique<CAFHandler>();
+	}
+
+	return NULL;
 }

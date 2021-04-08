@@ -13,11 +13,10 @@ std::vector<std::bitset<8>> WaveHandler::readFile() const
 
 	std::vector<std::bitset<8>> bits;
 
-	const std::vector<int> pattern{ 0x64, 0x61, 0x74, 0x61 };
-	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(pattern), std::end(pattern));
+	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->pattern), std::end(this->pattern));
 	if (it == std::end(buffer))
 	{
-		throw std::runtime_error("Data could not be found in the file");
+		throw std::runtime_error("\"data\" could not be found in the file");
 	}
 
 	std::advance(it, 8);
@@ -74,7 +73,7 @@ void WaveHandler::writeMessageInFile() const
 	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(pattern), std::end(pattern));
 	if (it == std::end(buffer))
 	{
-		throw std::runtime_error("Data could not be found in the file");
+		throw std::runtime_error("\"data\" could not be found in the file");
 	}
 
 	std::advance(it, 8);
@@ -124,8 +123,7 @@ void WaveHandler::writeMessageInFile() const
 
 	if (counter < this->messageBits.size())
 	{
-		std::cout << "Couldn't fit entire message inside the file." << std::endl;
-		return;
+		throw std::runtime_error("Couldn't fit entire message inside the file.");
 	}
 
 	std::ofstream ofs;
@@ -145,7 +143,7 @@ int WaveHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
 	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->pattern), std::end(this->pattern));
 	if (it == std::end(buffer))
 	{
-		throw std::runtime_error("Data could not be found in the file");
+		throw std::runtime_error("\"data\" could not be found in the file");
 	}
 	auto temp = std::prev(it, 2);
 
@@ -155,4 +153,14 @@ int WaveHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
 	int sampleSize = (byte2 << 8) + byte1;
 
 	return sampleSize;
+}
+
+const std::string WaveHandler::getExpressionString() const
+{
+	return "^.*\.(wav|WAV)$";
+}
+
+const std::string WaveHandler::getExtensionString() const
+{
+	return "wav";
 }

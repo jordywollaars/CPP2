@@ -140,12 +140,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AIFFHandler.cpp" />
+    <ClCompile Include="CAFHandler.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Smessage.cpp" />
     <ClCompile Include="WaveHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIFFHandler.hpp" />
+    <ClInclude Include="CAFHandler.hpp" />
     <ClInclude Include="FileHandler.hpp" />
     <ClInclude Include="OperatingInfo.hpp" />
     <ClInclude Include="WaveHandler.hpp" />

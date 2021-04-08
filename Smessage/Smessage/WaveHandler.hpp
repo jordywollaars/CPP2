@@ -11,4 +11,8 @@ public:
 	void writeMessageInFile() const override;
 
 	virtual int getSampleSizeFromBuffer(const std::vector<char>& buffer) const override;
+
+	virtual const std::string getExpressionString() const override;
+
+	virtual const std::string getExtensionString() const override;
 };
