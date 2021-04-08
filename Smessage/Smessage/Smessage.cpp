@@ -1,11 +1,8 @@
 // Smessage.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <memory>
 #include <iostream>
-#include <fstream>
-#include <ios>
-#include <vector>
-#include <bitset>
 
 #include <crtdbg.h>
 
@@ -24,10 +21,29 @@
 //D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf
 
 std::unique_ptr<FileHandler> getSpecificFileHandler(char extension);
-void read(std::unique_ptr<FileHandler>& fileHandler);
-void write(std::unique_ptr<FileHandler>& fileHandler);
+void start();
+void read(const std::unique_ptr<FileHandler>& fileHandler);
+void write(const std::unique_ptr<FileHandler>& fileHandler);
 
 int main()
+{
+	try
+	{
+		start();
+	}
+	catch (...) //Catch any missed errors
+	{
+		std::cerr << "unknown error \n";
+		return -1;
+	}
+
+	//Log memoryleaks if present
+	_CrtDumpMemoryLeaks();
+
+	return 0;
+}
+
+void start()
 {
 	char option = '0';
 
@@ -45,6 +61,7 @@ int main()
 
 		bool tried = false;
 
+		//Promt until valid input is received
 		while (option != '1' && option != '2' && option != '3')
 		{
 			if (tried)
@@ -54,7 +71,6 @@ int main()
 			}
 
 			std::cin >> option;
-			std::cin.get();
 
 			tried = true;
 
@@ -65,13 +81,13 @@ int main()
 		{
 			tried = false;
 			char extension = '0';
-			std::unique_ptr<FileHandler> fileReader;
 
 			std::cout << "What type of file are you using?" << std::endl
 				<< "1. WAV" << std::endl
 				<< "2. AIFF" << std::endl
 				<< "3. CAF" << std::endl;
 
+			//Promt until valid input is received
 			while (extension != '1' && extension != '2' && extension != '3')
 			{
 				if (tried)
@@ -81,50 +97,37 @@ int main()
 				}
 
 				std::cin >> extension;
-				std::cin.get();
 
 				tried = true;
 
 				std::cout << SECTIONDIVIDER << std::endl;
 			}
 
-			fileReader = getSpecificFileHandler(extension);
+			//Get required file handler
+			const std::unique_ptr<FileHandler> fileReader = getSpecificFileHandler(extension);
 
-			if (option == '1')
+			try
 			{
-				try
+				if (option == '1')
 				{
 					read(fileReader);
 				}
-				catch (const std::exception& e)
-				{
-					std::cerr << "Oops, it seems like something went wrong: " << e.what() << std::endl;
-				}
-
-				system("pause");
-			}
-			else if (option == '2')
-			{
-				try
+				else if (option == '2')
 				{
 					write(fileReader);
 				}
-				catch (const std::exception& e)
-				{
-					std::cerr << "Oops, it seems like something went wrong: " << e.what() << std::endl;
-				}
-
-				system("pause");
 			}
+			catch (const std::exception& e)
+			{
+				std::cout << SECTIONDIVIDER << std::endl;
+				std::cerr << "Oops, it seems like something went wrong: " << e.what() << std::endl;
+			}
+			system("pause");
 		}
 	}
-
-	_CrtDumpMemoryLeaks();
-
-	return 0;
 }
 
-void read(std::unique_ptr<FileHandler>& fileHandler)
+void read(const std::unique_ptr<FileHandler>& fileHandler)
 {
 	std::string filepath;
 
@@ -136,9 +139,7 @@ void read(std::unique_ptr<FileHandler>& fileHandler)
 
 	std::cout << SECTIONDIVIDER << std::endl;
 
-	std::vector<std::bitset<8>> possibleMessage;
-
-	possibleMessage = fileHandler.get()->readFile();
+	const std::vector<std::bitset<8>> possibleMessage = fileHandler.get()->readFile();
 
 	bool invalidMessage = false;
 	std::string message = "";
@@ -162,8 +163,6 @@ void read(std::unique_ptr<FileHandler>& fileHandler)
 	}
 	else
 	{
-		std::cout << message << std::endl;
-
 		std::cout << "No message was found! Did you mean to hide a message? (y/n)" << std::endl;
 
 		std::string input;
@@ -181,7 +180,7 @@ void read(std::unique_ptr<FileHandler>& fileHandler)
 	}
 }
 
-void write(std::unique_ptr<FileHandler>& fileHandler)
+void write(const std::unique_ptr<FileHandler>& fileHandler)
 {
 	std::string messageToHide;
 

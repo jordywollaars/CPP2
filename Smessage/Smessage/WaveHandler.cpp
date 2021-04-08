@@ -4,137 +4,65 @@
 #include <fstream>
 #include <ios>
 #include <regex>
+#include "BufferActions.hpp"
 
 std::vector<std::bitset<8>> WaveHandler::readFile() const
 {
-	const std::vector<char> buffer = this->setupOperatingInfo();
+	//Setup buffer from file content
+	const std::vector<char> buffer = this->createBuffer();
 
-	std::vector<std::bitset<8>> possibleMessage;
-
-	std::vector<std::bitset<8>> bits;
-
+	//Search audio data chunk
 	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->pattern), std::end(this->pattern));
 	if (it == std::end(buffer))
 	{
 		throw std::runtime_error("\"data\" could not be found in the file");
 	}
 
+	//Advance iterator to reading start position
 	std::advance(it, 8);
 
 	int steps = getSampleSizeFromBuffer(buffer) / 8;
-	for (it; it != buffer.end(); std::advance(it, steps))
-	{
-		char shifted = *it << 7;
-		std::bitset<8> x(shifted);
+	auto end = buffer.end();
 
-		bits.push_back(x);
-
-		if (bits.size() == 8)
-		{
-			for (int i = 0; i < 8; i++)
-			{
-				std::bitset<8> x(bits[i]);
-				std::bitset<8> test = x >> i;
-
-				bits[i] = test;
-			}
-
-			possibleMessage.push_back(
-				bits[0] | bits[1] | bits[2] | bits[3] | bits[4] | bits[5] | bits[6] | bits[7]
-			);
-
-			std::bitset<8> x(possibleMessage[possibleMessage.size() - 1]);
-
-			//std::cout << x << std::endl;
-
-			if (x == 0)
-			{
-				break;
-			}
-
-			bits.clear();
-		}
-	}
-
-	return possibleMessage;
+	//Read buffer for potential message
+	const BufferActions bActions{};
+	return bActions.readBuffer(steps, it, end);
 }
 
 void WaveHandler::writeMessageInFile() const
 {
-	std::vector<char> buffer = this->setupOperatingInfo();
+	//Setup buffer from file content
+	std::vector<char> buffer = this->createBuffer();
 
-	uint8_t mask1{ 1 };
-	uint8_t mask2{ 0xFE };
-
-	int counter = 0;
-	int nullByteCounter = 8;
-
-	std::vector<int> pattern{ 0x64, 0x61, 0x74, 0x61 };
-	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(pattern), std::end(pattern));
+	//Search audio data chunk
+	auto it = std::search(std::begin(buffer), std::end(buffer), std::begin(this->pattern), std::end(this->pattern));
 	if (it == std::end(buffer))
 	{
 		throw std::runtime_error("\"data\" could not be found in the file");
 	}
 
+	//Advance iterator to writing start position (skip 8 bytes)
 	std::advance(it, 8);
 
-	int steps = getSampleSizeFromBuffer(buffer) / 8;
-	for (it; it != buffer.end(); std::advance(it, steps))
-	{
-		if (counter < this->messageBits.size())
-		{
-			if (*it & mask1)
-			{
-				if (messageBits[counter] != 1)
-				{
-					*it = *it & mask2;
-				}
-			}
-			else
-			{
-				if (messageBits[counter] != 0)
-				{
-					*it = *it | mask1;
-				}
-			}
+	int stepSize = getSampleSizeFromBuffer(buffer) / 8;
+	auto end = buffer.end();
 
-			std::bitset<8> x(*it);
-			//std::cout << x << " - " << messageBits[counter] << std::endl;
+	//Hide message in buffer content
+	const BufferActions bufferActions{};
+	bufferActions.writeMessageInBuffer(this->messageBits, stepSize, it, end);
 
-			counter++;
-		}
-		else if (nullByteCounter >= 0)
-		{
-			if (*it & mask1)
-			{
-				*it = *it & mask2;
-			}
-
-			std::bitset<8> x(*it);
-			//std::cout << x << " - 0" << std::endl;
-
-			nullByteCounter--;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	if (counter < this->messageBits.size())
-	{
-		throw std::runtime_error("Couldn't fit entire message inside the file.");
-	}
-
+	//Open file to write modified data
 	std::ofstream ofs;
 	ofs.open(this->operatingPath, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 
+	//Write each byte to file
 	for (uint8_t byte : buffer)
 	{
 		char c = byte;
 		ofs << c;
 	}
 
+	//Close file
 	ofs.close();
 }
 
@@ -155,12 +83,71 @@ int WaveHandler::getSampleSizeFromBuffer(const std::vector<char>& buffer) const
 	return sampleSize;
 }
 
-const std::string WaveHandler::getExpressionString() const
+std::string WaveHandler::getExpressionString() const
 {
-	return "^.*\.(wav|WAV)$";
+	return this->expression;
 }
 
-const std::string WaveHandler::getExtensionString() const
+std::string WaveHandler::getExtensionString() const
 {
-	return "wav";
+	return this->extension;
+}
+
+std::vector<char> WaveHandler::createBuffer() const
+{
+	//Open file in binary mode
+	std::ifstream input(this->operatingPath, std::ios::binary);
+
+	if (!input) //No input found
+	{
+		throw std::runtime_error("Could not open file");
+	}
+
+	//Copy all data into buffer
+	std::vector<char> buffer(std::istreambuf_iterator<char>(input), {});
+
+	//Close file
+	input.close();
+
+	return buffer;
+}
+
+void WaveHandler::setMessageToHide(const std::string& message)
+{
+	//Clear messageBits vector
+	this->messageBits.clear();
+
+	//Put each seperate bit from message into messageBits vector
+	for (int i = 0; i < message.size(); i++)
+	{
+		std::bitset<8> byte(message[i]);
+
+		this->messageBits.push_back(byte[7]);
+		this->messageBits.push_back(byte[6]);
+		this->messageBits.push_back(byte[5]);
+		this->messageBits.push_back(byte[4]);
+		this->messageBits.push_back(byte[3]);
+		this->messageBits.push_back(byte[2]);
+		this->messageBits.push_back(byte[1]);
+		this->messageBits.push_back(byte[0]);
+	}
+}
+
+void WaveHandler::setOperatingPath(const std::string& filepath)
+{
+	std::regex expression(this->getExpressionString());
+
+	//Check whether filepath is compatible with the file format
+	if (!std::regex_match(filepath, expression))
+	{
+		throw std::invalid_argument("Invalid file extension.");
+	}
+
+	//Set operatingPath with filepath
+	operatingPath = filepath;
+}
+
+std::string WaveHandler::getOperatingPath() const
+{
+	return this->operatingPath;
 }
