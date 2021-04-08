@@ -15,11 +15,10 @@ protected:
 public:
 	virtual std::vector<std::bitset<8>> readFile() const = 0;
 	virtual void writeMessageInFile() const = 0;
+	virtual std::string getOperatingPath() const;
 
-	virtual OperatingInfo setupOperatingInfo() const = 0;
+	virtual void setMessageToHide(const std::string& message);
+	virtual void setOperatingPath(const std::string& filepath);
 
-	virtual std::string getOperatingPath() const = 0;
-
-	virtual void setMessageToHide(const std::string& message) = 0;
-	virtual void setOperatingPath(const std::string& filepath) = 0;
+	virtual std::vector<char> setupOperatingInfo() const;
 };

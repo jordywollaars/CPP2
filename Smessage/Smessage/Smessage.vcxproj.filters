@@ -24,11 +24,11 @@
     <ClCompile Include="FileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AIFFHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Wave.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WaveHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -36,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AIFFHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

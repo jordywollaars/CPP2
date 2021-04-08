@@ -10,13 +10,18 @@
 #include <crtdbg.h>
 
 #include "WaveHandler.hpp"
+#include "AIFFHandler.hpp"
 
 #define SECTIONDIVIDER "-------------------------------------------"
 
-#define WAVFILEWITHMESSAGE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav"
-#define WAVFILEWITHOUTMESSAGE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/sfx_weapon_singleshot2.wav"
-#define AIFFFile "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aiff"
-#define CAFFILE "D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf"
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/de-oude-schicht.wav
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/24_bit_fixed.wav
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/32_bit_float.wav
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/sfx_weapon_singleshot2.wav
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aif
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/test.aif
+//D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/news.caf
+
 
 void read(std::unique_ptr<FileHandler>& fileHandler);
 void write(std::unique_ptr<FileHandler>& fileHandler);
@@ -57,7 +62,8 @@ int main()
 
 		if (option == '1' || option == '2')
 		{
-			std::unique_ptr<FileHandler> fileReader = std::make_unique<WaveHandler>();
+			std::unique_ptr<FileHandler> fileReader = std::make_unique<AIFFHandler>();
+			fileReader.get()->setOperatingPath("D:/Users/Jordy/Desktop/CPP2/CPP2/Smessage/infinitely-many-numbers.aif");
 
 			if (option == '1')
 			{
@@ -95,13 +101,13 @@ int main()
 
 void read(std::unique_ptr<FileHandler>& fileHandler)
 {
-	std::string filepath;
+	/*std::string filepath;
 
 	std::cout << "Insert path to a wav file: ";
 	std::cin >> filepath;
 	std::cin.get();
 
-	fileHandler.get()->setOperatingPath(filepath);
+	fileHandler.get()->setOperatingPath(filepath);*/
 
 	std::cout << SECTIONDIVIDER << std::endl;
 
@@ -131,6 +137,8 @@ void read(std::unique_ptr<FileHandler>& fileHandler)
 	}
 	else
 	{
+		std::cout << message << std::endl;
+
 		std::cout << "No message was found! Did you mean to hide a message? (y/n)" << std::endl;
 
 		std::string input;

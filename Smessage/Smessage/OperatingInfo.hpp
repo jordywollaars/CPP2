@@ -5,5 +5,5 @@
 struct OperatingInfo 
 {
 	std::vector<char> buffer;
-	int dataStartPosition;
+	std::vector<char>::iterator operationBuffer;
 };
